@@ -13,13 +13,29 @@ void DrawMenu()
         Begin(OBFUSCATE("VolleyGirls Mod Menu"));
         ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_FittingPolicyResizeDown;
         if (BeginTabBar(OBFUSCATE("Main Tab"), tab_bar_flags)) {
-            if (BeginTabItem(OBFUSCATE("Character Unlock"))) {
+            if (BeginTabItem(OBFUSCATE("Character"))) {
                 PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.45f, 1.0f));
                 TextUnformatted(OBFUSCATE("Anti-Cheat Bypass Active"));
                 PopStyleColor();
-                Checkbox(OBFUSCATE("Unlock All Characters"), &g_unlockAllCharacters);
+                Checkbox(OBFUSCATE("Show All Character Cards"), &g_showAllCharacterCards);
                 PushTextWrapPos(0.0f);
-                TextUnformatted(OBFUSCATE("Enable this before opening Character Popup. Tap a character card to force select and arrange it."));
+                TextUnformatted(OBFUSCATE("Enable before opening Character Popup. Tapping a character card will force select and arrange, including locked entries."));
+                PopTextWrapPos();
+                EndTabItem();
+            }
+            if (BeginTabItem(OBFUSCATE("Shop/Event"))) {
+                Checkbox(OBFUSCATE("Unlock Limited Characters"), &g_unlockLimitedCharacters);
+                Checkbox(OBFUSCATE("Unlock Shop/Event Tabs"), &g_unlockShopEventTabs);
+                PushTextWrapPos(0.0f);
+                TextUnformatted(OBFUSCATE("Limited character unlock patches CanBuy and shop item fields. Shop/Event toggle unlocks Daily/Gold shop and WorldTour tab checks."));
+                PopTextWrapPos();
+                EndTabItem();
+            }
+            if (BeginTabItem(OBFUSCATE("Player"))) {
+                Checkbox(OBFUSCATE("No Stamina Decrease"), &g_noStaminaDecrease);
+                SliderInt(OBFUSCATE("Locked Stamina Value"), &g_staminaLockValue, 1, 9999);
+                PushTextWrapPos(0.0f);
+                TextUnformatted(OBFUSCATE("Uses NetDataUtil.get_UserData + UserData.st offset from dump.cs and restores stamina while enabled."));
                 PopTextWrapPos();
                 EndTabItem();
             }

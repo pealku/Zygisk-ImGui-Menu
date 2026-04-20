@@ -9,26 +9,19 @@ using namespace ImGui;
 
 void DrawMenu()
 {
-    static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     {
-        Begin(OBFUSCATE("ZyCheats"));
+        Begin(OBFUSCATE("VolleyGirls Mod Menu"));
         ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_FittingPolicyResizeDown;
-        if (BeginTabBar("Menu", tab_bar_flags)) {
-            if (BeginTabItem(OBFUSCATE("Account"))) {
-                // here menu stuff, remove test btw
-                // ImGui::Checkbox(OBFUSCATE("This is a checkbox"), &test);
-                if (Button(OBFUSCATE("Add Currency"))) {
-                    // code for button action
-                    addCurrency = true;
-                }
-                TextUnformatted(OBFUSCATE("Adds 1000 gems"));
-                if (Button(OBFUSCATE("Add Skins"))) {
-                    // code for button action
-                    addSkins = true;
-                }
-                Checkbox(OBFUSCATE("Everything unlocked"), &everythingUnlocked);
-                Checkbox(OBFUSCATE("Free Items"), &freeItems);
-                Checkbox(OBFUSCATE("Show Items"), &showAllItems);
+        if (BeginTabBar(OBFUSCATE("Main Tab"), tab_bar_flags)) {
+            if (BeginTabItem(OBFUSCATE("Character Unlock"))) {
+                TextColored(ImVec4(0.0f, 1.0f, 0.45f, 1.0f), OBFUSCATE("Anti-Cheat Bypass Active"));
+                Checkbox(OBFUSCATE("Unlock All Characters"), &g_unlockAllCharacters);
+                TextWrapped("%s", OBFUSCATE("Enable this before opening Character Popup. Tap a character card to force select and arrange it."));
+                EndTabItem();
+            }
+            if (BeginTabItem(OBFUSCATE("Info"))) {
+                BulletText("%s", OBFUSCATE("Target package: com.daerigame.volleygirls"));
+                BulletText("%s", OBFUSCATE("Target library: libil2cpp.so"));
                 EndTabItem();
             }
             EndTabBar();

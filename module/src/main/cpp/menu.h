@@ -14,14 +14,22 @@ void DrawMenu()
         ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_FittingPolicyResizeDown;
         if (BeginTabBar(OBFUSCATE("Main Tab"), tab_bar_flags)) {
             if (BeginTabItem(OBFUSCATE("Character Unlock"))) {
-                TextColored(ImVec4(0.0f, 1.0f, 0.45f, 1.0f), OBFUSCATE("Anti-Cheat Bypass Active"));
+                PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.45f, 1.0f));
+                TextUnformatted(OBFUSCATE("Anti-Cheat Bypass Active"));
+                PopStyleColor();
                 Checkbox(OBFUSCATE("Unlock All Characters"), &g_unlockAllCharacters);
-                TextWrapped("%s", OBFUSCATE("Enable this before opening Character Popup. Tap a character card to force select and arrange it."));
+                PushTextWrapPos(0.0f);
+                TextUnformatted(OBFUSCATE("Enable this before opening Character Popup. Tap a character card to force select and arrange it."));
+                PopTextWrapPos();
                 EndTabItem();
             }
             if (BeginTabItem(OBFUSCATE("Info"))) {
-                BulletText("%s", OBFUSCATE("Target package: com.daerigame.volleygirls"));
-                BulletText("%s", OBFUSCATE("Target library: libil2cpp.so"));
+                Bullet();
+                SameLine();
+                TextUnformatted(OBFUSCATE("Target package: com.daerigame.volleygirls"));
+                Bullet();
+                SameLine();
+                TextUnformatted(OBFUSCATE("Target library: libil2cpp.so"));
                 EndTabItem();
             }
             EndTabBar();

@@ -159,7 +159,7 @@ void Hooks() {
     HOOK("0x3F30EE8", GPrestoEngine_IsDetect, old_GPrestoEngine_IsDetect); // GPrestoEngine.IsDetect
     HOOK("0x3F2F614", GPrestoAOS_SendDetectionLog, old_GPrestoAOS_SendDetectionLog); // GPrestoAOS.SendDetectionLog
 
-    LOGI(OBFUSCATE("VolleyGirls character-unlock and anti-cheat hooks installed"));
+    LOGI("%s", (const char *) OBFUSCATE("VolleyGirls character-unlock and anti-cheat hooks installed"));
 }
 
 #endif //ZYCHEATS_SGUYS_FUNCTIONS_H

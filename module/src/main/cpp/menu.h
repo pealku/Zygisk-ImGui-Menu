@@ -27,10 +27,8 @@ void DrawMenu()
             if (BeginTabItem(OBFUSCATE("Match"))) {
                 Checkbox(OBFUSCATE("No Stamina Decrease (Alt Patch)"), &g_noStaminaDecrease);
                 SliderInt(OBFUSCATE("Stamina Lock Value"), &g_staminaLockValue, 1, 9999);
-                Checkbox(OBFUSCATE("Skill Gauge Always Full / Active"), &g_skillGaugeAlwaysFull);
                 Checkbox(OBFUSCATE("Beach Match Victory Reward Fallback"), &g_beachMatchVictoryReward);
                 PushTextWrapPos(0.0f);
-                TextUnformatted(OBFUSCATE("Skill gauge patch keeps IsReadySkill true and blocks skill-exp decrease for both BaseCharacterInfo and MBaseCharacterInfo."));
                 TextUnformatted(OBFUSCATE("Fallback forces GameManager.CoFinishCostumeMatch to use win-reward path for beach/costume matches."));
                 PopTextWrapPos();
                 EndTabItem();
@@ -38,10 +36,8 @@ void DrawMenu()
 
             if (BeginTabItem(OBFUSCATE("Ads"))) {
                 Checkbox(OBFUSCATE("Remove Ads (No Interstitial)"), &g_removeAds);
-                Checkbox(OBFUSCATE("Rewarded Ad Auto Complete"), &g_autoCompleteRewardedAds);
                 PushTextWrapPos(0.0f);
                 TextUnformatted(OBFUSCATE("Remove Ads disables interstitial ad start/show checks."));
-                TextUnformatted(OBFUSCATE("Rewarded auto-complete makes rewarded ads instantly complete by routing WatchAd to RewardWithLog."));
                 PopTextWrapPos();
                 EndTabItem();
             }

@@ -10,8 +10,6 @@ bool g_zeroScoutAndCostumePrices = false;
 bool g_beachMatchVictoryReward = false;
 bool g_noStaminaDecrease = false;
 bool g_removeAds = false;
-bool g_autoCompleteRewardedAds = false;
-bool g_skillGaugeAlwaysFull = false;
 int g_staminaLockValue = 99;
 
 // ShopUIItem internals from dump.cs.
@@ -38,18 +36,10 @@ constexpr uintptr_t kOffUserDataGoldMatchCount = 0x18C; // goldM
 constexpr uintptr_t kOffUserDataWorldTourMatchCount = 0x1F4; // wtM
 constexpr uintptr_t kOffUserDataCostumeMatchCount = 0x250; // cmM
 
-// Skill gauge offsets from dump.cs.
-constexpr uintptr_t kOffBaseCharacterSkillExp = 0x188;
-constexpr uintptr_t kOffBaseCharacterMaxSkillExp = 0x1CC;
-constexpr uintptr_t kOffMBaseCharacterSkillExp = 0x414;
-constexpr uintptr_t kOffMBaseCharacterMaxSkillExp = 0x43C;
-
 // Direct call targets (RVA from dump.cs).
 constexpr uintptr_t kOffNetDataUtilGetUserData = 0x2432E1C;
-constexpr uintptr_t kOffAdsManagerRewardWithLog = 0x250DD48;
 
 void *(*NetDataUtil_get_UserData)() = nullptr;
-void (*AdsManager_RewardWithLog)(void *instance) = nullptr;
 
 // Shop / tabs hooks.
 bool (*old_NetDataUtil_CanBuy)(void *shopData) = nullptr;
@@ -70,40 +60,6 @@ void (*old_CostumeMatchPopup_OnStartClick)(void *instance) = nullptr;
 bool (*old_AdsManager_CheckInterstitialAdsStartCondition)(void *instance) = nullptr;
 void (*old_AdsManager_ShowInterstitial)(void *instance) = nullptr;
 void (*old_AdsManager_StartInterstitialAd)(void *instance) = nullptr;
-bool (*old_AdsManager_VideoIsLoaded)(void *instance) = nullptr;
-void (*old_AdsManager_WatchAd)(void *instance, void *rewardAction, void *failAction) = nullptr;
-
-// Skill gauge hooks.
-void (*old_BaseCharacterInfo_IncreaseSkillExp)(void *instance, int32_t exp) = nullptr;
-void (*old_BaseCharacterInfo_DecreaseSkillExp)(void *instance, int32_t exp) = nullptr;
-bool (*old_BaseCharacterInfo_IsReadySkill)(void *instance) = nullptr;
-void (*old_MBaseCharacterInfo_IncreaseSkillExp)(void *instance, int32_t exp) = nullptr;
-void (*old_MBaseCharacterInfo_DecreaseSkillExp)(void *instance, int32_t exp) = nullptr;
-bool (*old_MBaseCharacterInfo_IsReadySkill)(void *instance) = nullptr;
-
-void FillBaseCharacterSkillGauge(void *instance) {
-    if (!g_skillGaugeAlwaysFull || instance == nullptr) {
-        return;
-    }
-
-    int32_t maxSkillExp = *reinterpret_cast<int32_t *>((uintptr_t) instance + kOffBaseCharacterMaxSkillExp);
-    if (maxSkillExp <= 0) {
-        maxSkillExp = 100;
-    }
-    *reinterpret_cast<int32_t *>((uintptr_t) instance + kOffBaseCharacterSkillExp) = maxSkillExp;
-}
-
-void FillMBaseCharacterSkillGauge(void *instance) {
-    if (!g_skillGaugeAlwaysFull || instance == nullptr) {
-        return;
-    }
-
-    int32_t maxSkillExp = *reinterpret_cast<int32_t *>((uintptr_t) instance + kOffMBaseCharacterMaxSkillExp);
-    if (maxSkillExp <= 0) {
-        maxSkillExp = 100;
-    }
-    *reinterpret_cast<int32_t *>((uintptr_t) instance + kOffMBaseCharacterSkillExp) = maxSkillExp;
-}
 
 void PatchShopDataFields(void *shopData) {
     if (shopData == nullptr) {
@@ -171,78 +127,10 @@ void ApplyStaminaPatch() {
 void Pointers() {
     NetDataUtil_get_UserData = reinterpret_cast<void *(*)()>(
             g_il2cppBaseMap.startAddress + kOffNetDataUtilGetUserData);
-    AdsManager_RewardWithLog = reinterpret_cast<void (*)(void *)>(
-            g_il2cppBaseMap.startAddress + kOffAdsManagerRewardWithLog);
 }
 
 void Patches() {
     ApplyStaminaPatch();
-}
-
-void BaseCharacterInfo_IncreaseSkillExp(void *instance, int32_t exp) {
-    if (g_skillGaugeAlwaysFull) {
-        FillBaseCharacterSkillGauge(instance);
-        return;
-    }
-
-    if (old_BaseCharacterInfo_IncreaseSkillExp != nullptr) {
-        old_BaseCharacterInfo_IncreaseSkillExp(instance, exp);
-    }
-}
-
-void BaseCharacterInfo_DecreaseSkillExp(void *instance, int32_t exp) {
-    if (g_skillGaugeAlwaysFull) {
-        FillBaseCharacterSkillGauge(instance);
-        return;
-    }
-
-    if (old_BaseCharacterInfo_DecreaseSkillExp != nullptr) {
-        old_BaseCharacterInfo_DecreaseSkillExp(instance, exp);
-    }
-}
-
-bool BaseCharacterInfo_IsReadySkill(void *instance) {
-    if (g_skillGaugeAlwaysFull) {
-        return true;
-    }
-
-    if (old_BaseCharacterInfo_IsReadySkill != nullptr) {
-        return old_BaseCharacterInfo_IsReadySkill(instance);
-    }
-    return false;
-}
-
-void MBaseCharacterInfo_IncreaseSkillExp(void *instance, int32_t exp) {
-    if (g_skillGaugeAlwaysFull) {
-        FillMBaseCharacterSkillGauge(instance);
-        return;
-    }
-
-    if (old_MBaseCharacterInfo_IncreaseSkillExp != nullptr) {
-        old_MBaseCharacterInfo_IncreaseSkillExp(instance, exp);
-    }
-}
-
-void MBaseCharacterInfo_DecreaseSkillExp(void *instance, int32_t exp) {
-    if (g_skillGaugeAlwaysFull) {
-        FillMBaseCharacterSkillGauge(instance);
-        return;
-    }
-
-    if (old_MBaseCharacterInfo_DecreaseSkillExp != nullptr) {
-        old_MBaseCharacterInfo_DecreaseSkillExp(instance, exp);
-    }
-}
-
-bool MBaseCharacterInfo_IsReadySkill(void *instance) {
-    if (g_skillGaugeAlwaysFull) {
-        return true;
-    }
-
-    if (old_MBaseCharacterInfo_IsReadySkill != nullptr) {
-        return old_MBaseCharacterInfo_IsReadySkill(instance);
-    }
-    return false;
 }
 
 bool NetDataUtil_CanBuy(void *shopData) {
@@ -405,30 +293,6 @@ void AdsManager_StartInterstitialAd(void *instance) {
     }
 }
 
-bool AdsManager_VideoIsLoaded(void *instance) {
-    if (g_autoCompleteRewardedAds) {
-        return true;
-    }
-
-    if (old_AdsManager_VideoIsLoaded != nullptr) {
-        return old_AdsManager_VideoIsLoaded(instance);
-    }
-    return false;
-}
-
-void AdsManager_WatchAd(void *instance, void *rewardAction, void *failAction) {
-    if (g_autoCompleteRewardedAds) {
-        if (instance != nullptr && AdsManager_RewardWithLog != nullptr) {
-            AdsManager_RewardWithLog(instance);
-        }
-        return;
-    }
-
-    if (old_AdsManager_WatchAd != nullptr) {
-        old_AdsManager_WatchAd(instance, rewardAction, failAction);
-    }
-}
-
 void Hooks() {
     // Unlock Limited Characters + shop zero-cost path.
     HOOK("0x2445F10", NetDataUtil_CanBuy, old_NetDataUtil_CanBuy); // NetDataUtil.CanBuy
@@ -452,19 +316,7 @@ void Hooks() {
     HOOK("0x250DEF8", AdsManager_ShowInterstitial, old_AdsManager_ShowInterstitial); // AdsManager.ShowInterstitial
     HOOK("0x250D8BC", AdsManager_StartInterstitialAd, old_AdsManager_StartInterstitialAd); // AdsManager.StartInterstitialAd
 
-    // Rewarded ad auto-complete.
-    HOOK("0x250D8C0", AdsManager_VideoIsLoaded, old_AdsManager_VideoIsLoaded); // AdsManager.VideoIsLoaded
-    HOOK("0x250D8D4", AdsManager_WatchAd, old_AdsManager_WatchAd); // AdsManager.WatchAd
-
-    // Skill gauge always full.
-    HOOK("0x24C98D4", BaseCharacterInfo_IncreaseSkillExp, old_BaseCharacterInfo_IncreaseSkillExp); // BaseCharacterInfo.IncreaseSkillExp
-    HOOK("0x24C9BA0", BaseCharacterInfo_DecreaseSkillExp, old_BaseCharacterInfo_DecreaseSkillExp); // BaseCharacterInfo.DecreaseSkillExp
-    HOOK("0x24C4C48", BaseCharacterInfo_IsReadySkill, old_BaseCharacterInfo_IsReadySkill); // BaseCharacterInfo.IsReadySkill
-    HOOK("0x2378D28", MBaseCharacterInfo_IncreaseSkillExp, old_MBaseCharacterInfo_IncreaseSkillExp); // MBaseCharacterInfo.IncreaseSkillExp
-    HOOK("0x2378CEC", MBaseCharacterInfo_DecreaseSkillExp, old_MBaseCharacterInfo_DecreaseSkillExp); // MBaseCharacterInfo.DecreaseSkillExp
-    HOOK("0x2377490", MBaseCharacterInfo_IsReadySkill, old_MBaseCharacterInfo_IsReadySkill); // MBaseCharacterInfo.IsReadySkill
-
-    LOGI("%s", (const char *) OBFUSCATE("VolleyGirls requested hooks + rewarded ad + skill gauge patches installed"));
+    LOGI("%s", (const char *) OBFUSCATE("VolleyGirls requested hooks installed"));
 }
 
 #endif //ZYCHEATS_SGUYS_FUNCTIONS_H

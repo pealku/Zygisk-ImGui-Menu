@@ -15,20 +15,13 @@ void DrawMenu()
         if (BeginTabBar(OBFUSCATE("Main Tab"), tab_bar_flags)) {
             if (BeginTabItem(OBFUSCATE("Shop"))) {
                 Checkbox(OBFUSCATE("Unlock Limited Characters"), &g_unlockLimitedCharacters);
-                Checkbox(OBFUSCATE("Unlock Shop/Event Tabs"), &g_unlockShopEventTabs);
-                Separator();
-                Checkbox(OBFUSCATE("Zero Daily Scout + Costume Prices"), &g_zeroScoutAndCostumePrices);
                 PushTextWrapPos(0.0f);
-                TextUnformatted(OBFUSCATE("Zero-price sets cost to 0 and allows buying without checks."));
+                TextUnformatted(OBFUSCATE("Sets all shop item prices to 0 and unlocks them unconditionally."));
                 PopTextWrapPos();
-                EndTabItem();
-            }
 
-            if (BeginTabItem(OBFUSCATE("Match"))) {
-                Checkbox(OBFUSCATE("Skill Gauge Always Full / Active"), &g_skillGaugeAlwaysFull);
-                PushTextWrapPos(0.0f);
-                TextUnformatted(OBFUSCATE("Skill gauge patch keeps IsReadySkill true and stops DecreaseSkillExp."));
-                PopTextWrapPos();
+                Separator();
+
+                Checkbox(OBFUSCATE("Unlock Shop/Event Tabs"), &g_unlockShopEventTabs);
                 EndTabItem();
             }
 
@@ -49,7 +42,7 @@ void DrawMenu()
                 TextUnformatted(OBFUSCATE("Target library: libil2cpp.so"));
                 Bullet();
                 SameLine();
-                TextUnformatted(OBFUSCATE("Based on GameGuardian Lua logic (IL2CPP port)."));
+                TextUnformatted(OBFUSCATE("Strictly ported from Lua toolboxes."));
                 EndTabItem();
             }
             EndTabBar();

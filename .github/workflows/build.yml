@@ -36,3 +36,6 @@ jobs:
         with:
           name: Zygisk-Mod-Menu
           path: |
+            out/*.zip
+            module/build/outputs/**/*.zip
+            app/build/outputs/**/*.apk

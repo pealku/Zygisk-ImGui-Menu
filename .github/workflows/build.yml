@@ -1,0 +1,30 @@
+name: Build Zygisk Menu
+# This allows you to run the build manually from the Actions tab
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive' # Crucial: downloads ImGui and other dependencies
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./gradlew
+      - name: Build Module
+        run: ./gradlew assembleRelease
+      - name: Upload Module zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zygisk-Mod-Menu
+          # Searches common output folders for the finished magisk module
+          path: |
+            out/*.zip
+            module/build/outputs/**/*.zip
+            app/build/outputs/**/*.apk

@@ -75,6 +75,9 @@ void ShopUIItem_UpdateData(void *instance, void *scrollData) {
 }
 
 void Hooks() {
-    HOOK("0x25031E8", ShopUIItem_UpdateData, old_ShopUIItem_UpdateData);        
+    HOOK("0x25031E8", ShopUIItem_UpdateData, old_ShopUIItem_UpdateData);
+
+    LOGI("%s", (const char *) OBFUSCATE("VolleyGirls stripped script hooks installed"));
+}
 
 #endif //ZYCHEATS_SGUYS_FUNCTIONS_H

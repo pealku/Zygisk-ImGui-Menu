@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <sys/system_properties.h>
 #include <dlfcn.h>
-#include <dlfcn.h>
 #include <cstdlib>
 #include <cinttypes>
 #include <string>
@@ -21,17 +20,16 @@
 #include "KittyMemory/KittyScanner.h"
 #include "KittyMemory/KittyUtils.h"
 #include "Includes/Dobby/dobby.h"
-#include "Include/Unity.h"
 #include "Misc.h"
 #include "hook.h"
 #include "Include/Roboto-Regular.h"
 #include <iostream>
 #include <chrono>
-#include "Include/Quaternion.h"
 #include "Rect.h"
 #include <fstream>
 #include <limits>
-#define GamePackageName "com.daerigame.volleygirls"
+
+#define GamePackageName "com.daerisoft.thespikerm"
 
 int glHeight, glWidth;
 
@@ -82,24 +80,34 @@ HOOKAF(int32_t, Consume, void *thiz, void *arg1, bool arg2, long arg3, uint32_t 
 #include "menu.h"
 
 void *hack_thread(void *arg) {
+    // Find libyoyo.so base
     do {
         sleep(1);
-        g_il2cppBaseMap = KittyMemory::getLibraryBaseMap("libil2cpp.so");
-    } while (!g_il2cppBaseMap.isValid());
-    KITTY_LOGI("il2cpp base: %p", (void*)(g_il2cppBaseMap.startAddress));
-    Pointers();
-    Hooks();
+        g_yoyoBaseMap = KittyMemory::getLibraryBaseMap("libyoyo.so");
+    } while (!g_yoyoBaseMap.isValid());
+    KITTY_LOGI("libyoyo.so base: %p", (void*)(g_yoyoBaseMap.startAddress));
+
+    // Init Sara+WhiteSpike scanner
+    sara_init();
+
+    // Setup ImGui rendering hook via EGL
     auto eglhandle = dlopen("libunity.so", RTLD_LAZY);
-    auto eglSwapBuffers = dlsym(eglhandle, "eglSwapBuffers");
-    DobbyHook((void*)eglSwapBuffers,(void*)hook_eglSwapBuffers,
-              (void**)&old_eglSwapBuffers);
-    void *sym_input = DobbySymbolResolver(("/system/lib/libinput.so"), ("_ZN7android13InputConsumer21initializeMotionEventEPNS_11MotionEventEPKNS_12InputMessageE"));
+    if (eglhandle) {
+        auto eglSwapBuffers = dlsym(eglhandle, "eglSwapBuffers");
+        DobbyHook((void*)eglSwapBuffers, (void*)hook_eglSwapBuffers,
+                  (void**)&old_eglSwapBuffers);
+    }
+
+    // Input hooks
+    void *sym_input = DobbySymbolResolver("/system/lib/libinput.so",
+        "_ZN7android13InputConsumer21initializeMotionEventEPNS_11MotionEventEPKNS_12InputMessageE");
     if (NULL != sym_input) {
-        DobbyHook(sym_input,(void*)myInput,(void**)&origInput);
+        DobbyHook(sym_input, (void*)myInput, (void**)&origInput);
     } else {
-        sym_input = DobbySymbolResolver(("/system/lib/libinput.so"), ("_ZN7android13InputConsumer7consumeEPNS_26InputEventFactoryInterfaceEblPjPPNS_10InputEventE"));
-        if(NULL != sym_input) {
-            DobbyHook(sym_input,(void *) myConsume,(void **) &origConsume);
+        sym_input = DobbySymbolResolver("/system/lib/libinput.so",
+            "_ZN7android13InputConsumer7consumeEPNS_26InputEventFactoryInterfaceEblPjPPNS_10InputEventE");
+        if (NULL != sym_input) {
+            DobbyHook(sym_input, (void*)myConsume, (void**)&origConsume);
         }
     }
     LOGI("Draw Done!");

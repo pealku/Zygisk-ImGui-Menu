@@ -1,83 +1,38 @@
-﻿#ifndef ZYCHEATS_SGUYS_FUNCTIONS_H
-#define ZYCHEATS_SGUYS_FUNCTIONS_H
+#ifndef ZYCHEATS_SARA_FUNCTIONS_H
+#define ZYCHEATS_SARA_FUNCTIONS_H
 
-#include <cstdint>
+#include "sara_whitespike.h"
 
-// Menu state
-bool g_unlockLimitedCharacters = false;
-bool g_unlockShopEventTabs = false;
-bool g_removeAds = false;
+// toggle bindings for the menu
+bool saraWhiteSpike = false;
 
-// ShopData / ShopUIItemData field offsets from dump.cs.
-constexpr uintptr_t kOffShopDataShow = 0x18;
-constexpr uintptr_t kOffShopDataShowAfterBuy = 0x1C;
-constexpr uintptr_t kOffShopDataCostAmount = 0x78;
-constexpr uintptr_t kOffShopDataLimitValue = 0x90;
-constexpr uintptr_t kOffShopDataLimitAmount = 0x94;
-constexpr uintptr_t kOffShopDataUnlockValue = 0xA0;
-constexpr uintptr_t kOffShopUIItemDataShopData = 0x10;
-constexpr uintptr_t kOffShopUIItemDataCanBuy = 0x30;
-constexpr uintptr_t kOffShopUIItemItemData = 0x170;
+void sara_init() {
+    // called once after libyoyo.so base is found
+    if (g_saraCtx.found) return;
 
-// Function pointers for original methods
-void (*old_ShopUIItem_UpdateData)(void *instance, void *scrollData) = nullptr;  
+    KittyMemory::ProcMap yoyoMap = KittyMemory::getLibraryBaseMap("libyoyo.so");
+    if (!yoyoMap.isValid()) return;
 
-void Pointers() {}
+    uintptr_t base = yoyoMap.startAddress;
+    size_t    size = yoyoMap.length;
 
-void Patches() {
-    // === UNLOCK LIMITED CHARACTERS MOD ===
-    PATCH_SWITCH("0x2445F10", "20008052C0035FD6", g_unlockLimitedCharacters); // NetDataUtil_CanBuy -> RETURN_TRUE
-
-    // === UNLOCK SHOP/EVENT TABS MOD ===
-    PATCH_SWITCH("0x24F2AA8", "20008052C0035FD6", g_unlockShopEventTabs); // RedNotiInfo_IsPossibleGoldShop -> RETURN_TRUE
-    PATCH_SWITCH("0x24F2828", "20008052C0035FD6", g_unlockShopEventTabs); // RedNotiInfo_IsPossibleDailyShop -> RETURN_TRUE
-    PATCH_SWITCH("0x244CB4C", "20008052C0035FD6", g_unlockShopEventTabs); // NetDataUtil_IsPossiblePlayWorldTour -> RETURN_TRUE
-    PATCH_SWITCH("0x244CC28", "20008052C0035FD6", g_unlockShopEventTabs); // NetDataUtil_IsPossibleWorldTourShop -> RETURN_TRUE
-
-    // === ADS REMOVAL WITH REWARDS MODS ===
-    PATCH_SWITCH("0x250DE58", "00008052C0035FD6", g_removeAds); // AdsManager_CheckInterstitialAdsStartCondition -> RETURN_FALSE
-    PATCH_SWITCH("0x250D8BC", "00008052C0035FD6", g_removeAds); // AdsManager_StartInterstitialAd -> RETURN_FALSE
-    PATCH_SWITCH("0x250D8C0", "20008052C0035FD6", g_removeAds); // AdsManager_VideoIsLoaded -> RETURN_TRUE
-}
-
-void PatchShopDataFields(void *shopData) {
-    if (shopData == nullptr) return;
-
-    if (g_unlockLimitedCharacters) {
-        *reinterpret_cast<int32_t *>((uintptr_t) shopData + kOffShopDataShow) = 1;
-        *reinterpret_cast<int32_t *>((uintptr_t) shopData + kOffShopDataShowAfterBuy) = 1;
-        *reinterpret_cast<int32_t *>((uintptr_t) shopData + kOffShopDataCostAmount) = 0;
-        *reinterpret_cast<int32_t *>((uintptr_t) shopData + kOffShopDataLimitValue) = 0;
-        *reinterpret_cast<int32_t *>((uintptr_t) shopData + kOffShopDataLimitAmount) = 999999;
-        *reinterpret_cast<int32_t *>((uintptr_t) shopData + kOffShopDataUnlockValue) = 0;
+    if (sara_find_and_patch(base, size)) {
+        LOGI("SpikerSara found at %p", (void*)g_saraCtx.funcAddr);
+    } else {
+        LOGE("SpikerSara NOT found in libyoyo.so");
     }
 }
 
-void PatchShopUIItemDataFields(void *itemData) {
-    if (itemData == nullptr) return;
+void sara_patch_toggle() {
+    if (!g_saraCtx.found) return;
 
-    if (g_unlockLimitedCharacters) {
-        *reinterpret_cast<uint8_t *>((uintptr_t) itemData + kOffShopUIItemDataCanBuy) = 1;
-    }
-
-    void *shopData = *reinterpret_cast<void **>((uintptr_t) itemData + kOffShopUIItemDataShopData);
-    PatchShopDataFields(shopData);
-}
-
-void ShopUIItem_UpdateData(void *instance, void *scrollData) {
-    if (instance != nullptr) {
-        void *itemData = *reinterpret_cast<void **>((uintptr_t) instance + kOffShopUIItemItemData);
-        PatchShopUIItemDataFields(itemData);
-    }
-    if (old_ShopUIItem_UpdateData != nullptr) {
-        old_ShopUIItem_UpdateData(instance, scrollData);
+    if (saraWhiteSpike && !g_saraCtx.enabled) {
+        sara_apply();
+        LOGI("WhiteSpike applied to Sara");
+    } else if (!saraWhiteSpike && g_saraCtx.enabled) {
+        sara_restore();
+        LOGI("WhiteSpike removed from Sara");
     }
 }
 
-void Hooks() {
-    HOOK("0x25031E8", ShopUIItem_UpdateData, old_ShopUIItem_UpdateData);
-
-    LOGI("%s", (const char *) OBFUSCATE("VolleyGirls stripped script hooks installed"));
-}
-
-#endif //ZYCHEATS_SGUYS_FUNCTIONS_H
+#endif // ZYCHEATS_SARA_FUNCTIONS_H

@@ -90,12 +90,19 @@ void *hack_thread(void *arg) {
     // Init Sara+WhiteSpike scanner
     sara_init();
 
-    // Setup ImGui rendering hook via EGL
-    auto eglhandle = dlopen("libunity.so", RTLD_LAZY);
+    // Setup ImGui rendering hook via EGL (GameMaker uses libEGL, not libunity)
+    auto eglhandle = dlopen("libEGL.so", RTLD_LAZY);
+    if (!eglhandle) eglhandle = dlopen("libunity.so", RTLD_LAZY);
     if (eglhandle) {
         auto eglSwapBuffers = dlsym(eglhandle, "eglSwapBuffers");
-        DobbyHook((void*)eglSwapBuffers, (void*)hook_eglSwapBuffers,
-                  (void**)&old_eglSwapBuffers);
+        if (eglSwapBuffers) {
+            DobbyHook((void*)eglSwapBuffers, (void*)hook_eglSwapBuffers,
+                      (void**)&old_eglSwapBuffers);
+        } else {
+            LOGE("eglSwapBuffers not found");
+        }
+    } else {
+        LOGE("Failed to load EGL library");
     }
 
     // Input hooks

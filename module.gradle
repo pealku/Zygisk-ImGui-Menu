@@ -1,9 +1,9 @@
 ext {
-    moduleLibraryName = "zyCheats"
-    magiskModuleId = "zyCheats"
-    moduleName = "zyCheats"
+    moduleLibraryName = "thespikerm"
+    magiskModuleId = "thespikerm"
+    moduleName = "The Spike Mod Menu"
     moduleAuthor = "fedes1to"
-    moduleDescription = "Zygisk ImGui Mod Menu"
+    moduleDescription = "The Spike - Character Mod Menu"
     moduleVersion = "v1.0"
     moduleVersionCode = 1
 }
